@@ -130,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\chatbox.bundle" />
+    <None Include="Resources\chatbox_final.bundle" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

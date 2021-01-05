@@ -43,7 +43,7 @@ namespace In_Game_Chat.Patches
                 case JSRM_Message.broadcasterCoopCode:
                     SessionData.messageManager.Broadcaster_Msg(message.bytes);
                     break;
-                case Chat_Message.chatCoopCode:
+                case BloonsTD6_Mod_Helper.Api.Coop.Chat_Message.chatCoopCode:
                     SessionData.messageManager.Chat_Msg(message.bytes);
                     break;
                 default:

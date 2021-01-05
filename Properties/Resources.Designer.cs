@@ -69,5 +69,15 @@ namespace In_Game_Chat.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] chatbox_final {
+            get {
+                object obj = ResourceManager.GetObject("chatbox_final", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

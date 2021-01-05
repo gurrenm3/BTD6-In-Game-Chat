@@ -35,9 +35,7 @@ namespace In_Game_Chat.Messages
 
         public void Chat_Msg(Il2CppStructArray<byte> messageBytes)
         {
-            var msg = new Chat_Message(messageBytes);
-            MelonLogger.Log(msg.Sender);
-            MelonLogger.Log(msg.Message);
+            var msg = new BloonsTD6_Mod_Helper.Api.Coop.Chat_Message(messageBytes);
             SessionData.Chat.UpdateChatLog(msg.Message, msg.Sender);
         }
 
@@ -56,7 +54,9 @@ namespace In_Game_Chat.Messages
                 SessionData.playersWithMod.Add(newPlayer);
                 
                 if (!string.IsNullOrEmpty(newPlayer.PlayerName))
+                {
                     SessionData.Chat.UpdateChatLog($"{newPlayer.PlayerName} has joined as Player {newPlayer.PeerID}!", "Notification");
+                }
                 else
                     SessionData.Chat.UpdateChatLog($"Player {newPlayer.PeerID} has joined!", "Notification");
 

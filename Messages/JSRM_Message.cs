@@ -31,10 +31,12 @@ namespace In_Game_Chat.Messages
 
             string json = Serialize();
             Game.instance.nkGI.SendMessage(json, code: broadcasterCoopCode);
-            Game.instance.nkGI.SendMessage(json, 1, broadcasterCoopCode);
+
+            // Sending to peers as well. Likely not necessary as above sends to all
+            /*Game.instance.nkGI.SendMessage(json, 1, broadcasterCoopCode);
             Game.instance.nkGI.SendMessage(json, 2, broadcasterCoopCode);
             Game.instance.nkGI.SendMessage(json, 3, broadcasterCoopCode);
-            Game.instance.nkGI.SendMessage(json, 4, broadcasterCoopCode);
+            Game.instance.nkGI.SendMessage(json, 4, broadcasterCoopCode);*/
         }
 
         public JSRM_Message Read(string json)

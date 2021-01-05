@@ -11,7 +11,7 @@ namespace In_Game_Chat.Patches
         [HarmonyPostfix]
         internal static void Postfix(Simulation __instance)
         {
-            SessionData.Chat.IsVisible = false;
+            //SessionData.Chat.IsVisible = false;
             /*MelonLogger.Log("Initialise");
             bool isCoop = InGame.instance.IsCoop;
 

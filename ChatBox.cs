@@ -16,7 +16,7 @@ namespace In_Game_Chat
         private GameObject chatBoxCanvasGo;
 
         private GameObject instantiatedChatBox;
-        private GameObject chatBox;
+        //private GameObject chatBox;
         private Text messageDisplay;
         Image textArea;
         ScrollRect textAreaScrollRect;
@@ -32,6 +32,34 @@ namespace In_Game_Chat
         const float timeToIgnoreAfterSendMessage = 1f;
 
         public void InitializeChatBox()
+        {
+            if (assetBundle == null)
+                assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.chatbox_final);
+
+            if (chatBoxCanvasGo == null)
+                chatBoxCanvasGo = assetBundle.LoadAsset("Canvas_Final").Cast<GameObject>();
+
+            if (instantiatedChatBox == null)
+                instantiatedChatBox = GameObject.Instantiate(chatBoxCanvasGo);
+
+
+            /*chatBox = instantiatedChatBox.transform.Find("/ChatBox").GetComponent<GameObject>();
+            MelonLogger.Log($"chatBox == null: {chatBox == null}");*/
+
+            textArea = instantiatedChatBox.transform.Find("ChatBox/Image").GetComponent<Image>();
+            textAreaScrollRect = instantiatedChatBox.transform.Find("ChatBox/Image").GetComponent<ScrollRect>();
+            messageDisplay = instantiatedChatBox.transform.Find("ChatBox/Image/MessageHistory").GetComponent<Text>();
+
+            messageDisplay.text = "";
+            messageInput = instantiatedChatBox.transform.Find("ChatBox/Input").GetComponent<InputField>();
+
+            //messageDisplay.rectTransform.sizeDelta = new Vector2(messageDisplay.rectTransform.sizeDelta.x, textAreaScrollRect.rectTransform.sizeDelta.y);
+
+            instantiatedChatBox.SetActive(false);
+            instantiated = true;
+        }
+
+        /*public void InitializeOldChatBox()
         {
             if (assetBundle == null)
                 assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.chatbox);
@@ -55,7 +83,7 @@ namespace In_Game_Chat
 
             instantiatedChatBox.SetActive(false);
             instantiated = true;
-        }
+        }*/
 
 
         public void Update() => CheckSendMessages();
@@ -76,6 +104,7 @@ namespace In_Game_Chat
         {
             if (!instantiated)
                 InitializeChatBox();
+                //InitializeOldChatBox();
 
             bool visibility = (instantiatedChatBox.activeSelf) ? false : true;
             instantiatedChatBox.SetActive(visibility);
@@ -90,6 +119,7 @@ namespace In_Game_Chat
         public void SendMessage()
         {
             string message = messageInput.text;
+
             if (string.IsNullOrEmpty(message))
                 return;
 
