@@ -6,6 +6,8 @@ using Assets.Scripts.Unity;
 using UnityEngine.EventSystems;
 using System;
 using In_Game_Chat.Messages;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace In_Game_Chat
 {
@@ -16,7 +18,6 @@ namespace In_Game_Chat
         private GameObject chatBoxCanvasGo;
 
         private GameObject instantiatedChatBox;
-        //private GameObject chatBox;
         private Text messageDisplay;
         Image textArea;
         ScrollRect textAreaScrollRect;
@@ -25,8 +26,11 @@ namespace In_Game_Chat
         private KeyCode SendKey = KeyCode.Return;
         private KeyCode SendKeyAlt = KeyCode.KeypadEnter;
 
+        private Button closeButton;
+        private List<Button> dmButtons = new List<Button>();
+
         public bool IsFocused { get { return IsChatFocused(); } }
-        public bool IsVisible { get { return instantiatedChatBox.activeSelf; } set { SetVisibility(value); } }
+        public bool Visible { get { return instantiatedChatBox.activeSelf; } set { SetVisibility(value); } }
 
         private float timeToIgnoreHotkeys = 0f;
         const float timeToIgnoreAfterSendMessage = 1f;
@@ -43,9 +47,6 @@ namespace In_Game_Chat
                 instantiatedChatBox = GameObject.Instantiate(chatBoxCanvasGo);
 
 
-            /*chatBox = instantiatedChatBox.transform.Find("/ChatBox").GetComponent<GameObject>();
-            MelonLogger.Log($"chatBox == null: {chatBox == null}");*/
-
             textArea = instantiatedChatBox.transform.Find("ChatBox/Image").GetComponent<Image>();
             textAreaScrollRect = instantiatedChatBox.transform.Find("ChatBox/Image").GetComponent<ScrollRect>();
             messageDisplay = instantiatedChatBox.transform.Find("ChatBox/Image/MessageHistory").GetComponent<Text>();
@@ -53,37 +54,36 @@ namespace In_Game_Chat
             messageDisplay.text = "";
             messageInput = instantiatedChatBox.transform.Find("ChatBox/Input").GetComponent<InputField>();
 
-            //messageDisplay.rectTransform.sizeDelta = new Vector2(messageDisplay.rectTransform.sizeDelta.x, textAreaScrollRect.rectTransform.sizeDelta.y);
+            closeButton = instantiatedChatBox.transform.Find("ChatBox/CloseButton").GetComponent<Button>();
+            closeButton.onClick.AddListener(new Action(() => { CloseButtonClick(); }));
+            AddDmButtons();
 
             instantiatedChatBox.SetActive(false);
             instantiated = true;
         }
 
-        /*public void InitializeOldChatBox()
+        private void AddDmButtons()
         {
-            if (assetBundle == null)
-                assetBundle = AssetBundle.LoadFromMemory(Properties.Resources.chatbox);
+            for (int i = 0; i < 4; i++)
+            {
+                int buttonNum = i + 1;
+                var button = instantiatedChatBox.transform.Find($"ChatBox/DM_Buttons/Player {buttonNum}").GetComponent<Button>();
+                button.onClick.AddListener(new Action(() => { DmButtonPressed(button); }));
+                dmButtons.Add(button);
+            }
+        }
 
-            if (chatBoxCanvasGo == null)
-                chatBoxCanvasGo = assetBundle.LoadAsset("Canvas").Cast<GameObject>();
+        private void DmButtonPressed(Button sender)
+        {
+            var text = messageInput.text;
+            if (IsPrivateMessage(text))
+                text = text.Replace("/player1 ", "").Replace("/player2 ", "").Replace("/player3 ", "").Replace("/player4 ", "");
 
-            if (instantiatedChatBox == null)
-                instantiatedChatBox = GameObject.Instantiate(chatBoxCanvasGo);
-
-            chatBox = instantiatedChatBox.transform.Find("ChatBox").GetComponent<GameObject>();
-            textArea = instantiatedChatBox.transform.Find("ChatBox/TextArea").GetComponent<Image>();
-            textAreaScrollRect = instantiatedChatBox.transform.Find("ChatBox/TextArea").GetComponent<ScrollRect>();
-
-            messageDisplay = instantiatedChatBox.transform.Find("ChatBox/TextArea/Text").GetComponent<Text>();
-            messageDisplay.text = "";
-
-            messageInput = instantiatedChatBox.transform.Find("ChatBox/InputField").GetComponent<InputField>();
-
-            //messageDisplay.rectTransform.sizeDelta = new Vector2(messageDisplay.rectTransform.sizeDelta.x, textAreaScrollRect.rectTransform.sizeDelta.y);
-
-            instantiatedChatBox.SetActive(false);
-            instantiated = true;
-        }*/
+            var recipient = sender.name.ToLower().Replace(" ", "");
+            var newMessage = $"/{recipient} {text}";
+            messageInput.text = newMessage;
+            FocusOnTextInput();
+        }
 
 
         public void Update() => CheckSendMessages();
@@ -100,11 +100,11 @@ namespace In_Game_Chat
             }
         }
 
+
         public void ShowHideChatBox()
         {
             if (!instantiated)
                 InitializeChatBox();
-                //InitializeOldChatBox();
 
             bool visibility = (instantiatedChatBox.activeSelf) ? false : true;
             instantiatedChatBox.SetActive(visibility);
@@ -115,11 +115,9 @@ namespace In_Game_Chat
         }
 
 
-
         public void SendMessage()
         {
             string message = messageInput.text;
-
             if (string.IsNullOrEmpty(message))
                 return;
 
@@ -130,7 +128,8 @@ namespace In_Game_Chat
         {
             byte? peerID = GetPeerID(message.Message);
             if (peerID.HasValue)
-                message.Message = message.Message.Remove(0, 3);
+                message.Message = message.Message.Remove(0, 9);
+
 
             var json = message.Serialize();
             SendMessageToPeers(json, peerID);
@@ -146,12 +145,15 @@ namespace In_Game_Chat
 
         private byte? GetPeerID(string message)
         {
-            if (!message.StartsWith("1: ") && !message.StartsWith("2: ") && !message.StartsWith("3: ") && !message.StartsWith("4: "))
+            if (!IsPrivateMessage(message))
                 return null;
 
-            Int32.TryParse(message.Split(':')[0].Replace(": ", ""), out int id);
+            Int32.TryParse(message[7].ToString(), out int id);
             return (byte?)id;
         }
+
+        private bool IsPrivateMessage(string message) => message.StartsWith("/player1 ") || message.StartsWith("/player2 ") 
+            || message.StartsWith("/player3 ") || message.StartsWith("/player4 ");
 
         public void UpdateChatLog(string message, string sender)
         {
@@ -160,6 +162,7 @@ namespace In_Game_Chat
 
             textAreaScrollRect.normalizedPosition = new Vector2(0, 0);
             timeToIgnoreHotkeys = Time.time + timeToIgnoreAfterSendMessage;
+            SpawnBloonsIfPossible(message);
         }
 
         public void ShowMessage(string message)
@@ -209,6 +212,20 @@ namespace In_Game_Chat
         {
             if (instantiatedChatBox != null)
                 instantiatedChatBox.SetActive(visible);
+        }
+
+        private void CloseButtonClick() => ShowHideChatBox();
+
+
+        private void SpawnBloonsIfPossible(string message)
+        {
+            var split = message.Split(' ');
+            var bloonName = split[split.Length - 1].Trim(' ');
+
+            var bloonModel = Game.instance.model.bloons.FirstOrDefault(bloon => bloon.name == bloonName);
+
+            if (bloonModel != null)
+                bloonModel.SpawnBloonModel();
         }
     }
 }

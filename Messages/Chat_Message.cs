@@ -14,8 +14,11 @@ namespace In_Game_Chat.Messages
     {
         public Chat_Message(string messageToSend, bool sendMessageNow = true)
         {
-            PeerID = Game.instance.nkGI.PeerID;
-            Sender = Game.instance.playerService.Player.LiNKAccount.DisplayName;
+            var id = Game.instance?.nkGI?.PeerID;
+            if (id.HasValue)
+                PeerID = id.Value;
+
+            Sender = Game.instance?.playerService?.Player?.LiNKAccount?.DisplayName;
             Message = messageToSend;
 
             if (sendMessageNow)

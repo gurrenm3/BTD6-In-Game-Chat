@@ -10,7 +10,7 @@ namespace In_Game_Chat.Patches
         internal static void Postfix()
         {
             SessionData.Chat.ClearChatLog();
-            SessionData.Chat.IsVisible = false;
+            SessionData.Chat.Visible = false;
         }
     }
 }
