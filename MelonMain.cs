@@ -4,7 +4,7 @@ using MelonLoader;
 using System;
 using System.Reflection;
 using UnityEngine;
-using BloonsTD6_Mod_Helper.Extensions;
+using BTD_Mod_Helper.Extensions;
 using NinjaKiwi.NKMulti;
 
 namespace In_Game_Chat
